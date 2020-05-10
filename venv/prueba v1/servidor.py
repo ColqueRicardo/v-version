@@ -11,16 +11,20 @@ class servidor():
         self.ip.append(ip2)
 
         'self.ip=socket.gethostbyname(socket.gethostname())'
-
+        'velocidad de los objetos'
         self.jugador_velocidad=0
+
+
+
 
         self.velocidad_jugador()
         'variables usadas en el envio / recive'
         self.socket_envia=[]
         self.socket_recive=[]
-        self.socket_coneccion=[]
-        self.socket_direccion=[]
-
+        '''self.coneccion_envia=[]
+        self.direccion_envia=[]
+        self.coneccion_recive=[]
+        self.direccion_recive=[]'''
 
 
 
@@ -32,7 +36,12 @@ class servidor():
         self.tope_izquierda=(1500*0.8)*0.1
         self.tope_derecha=(1500*0.8)*0.9
         self.tope_arriba=(800*0.8)*0.1
-        self.tope_abajo=(800*0.8)*0.9
+        self.tope_abajo=800*0.8*0.9
+        'el tope de abajo tiene q considerar el tamaño de la barra '
+        self.tamaño_barra=800*0.8*0.5
+        self.tope_abajo_jugador=((800*0.8)*0.9)-self.tamaño_barra
+
+
 
         x=(1500*0.8)//2
         y=(800*0.8)//2
@@ -42,23 +51,19 @@ class servidor():
         self.pelota_posicion=[]
         self.pelota_posicion.append(x-t)
         self.pelota_posicion.append(y-t)
-        self.pelota_movimiento=[]
-        self.pelota_movimiento.append(0)
-        self.pelota_movimiento.append(0)
 
-        self.establecer_conexion()
 
+        self.conexion(0,8001,8000)
         self.hilo_pelota_movimiento=threading.Thread(name="movimiento",target=self.movimiento)
         self.hilo_pelota_movimiento.start()
-        self.hilo_recive=threading.Thread(name="recive",target=self.recive)
+        self.hilo_recive=threading.Thread(name="recive",target=self.recive,args={0,8000})
         self.hilo_recive.start()
-        self.hilo_envia=threading.Thread(name="envia",target=self.envia)
+        self.hilo_envia=threading.Thread(name="envia",target=self.envia,args={0,8001})
         self.hilo_envia.start()
-        '''self.s=threading.Timer(0.5,function=self.ss())
-        self.s.start()'''
+
 
     def establecer_conexion(self):
-        self.hilo_conexion1=threading.Thread(name=self.ip1)
+        self.hilo_conexion1=threading.Thread(name=self.ip[0],target=self.conexion(0,8000,8001))
 
     def conexion(self,id,puerto1,puerto2):
         while True:
@@ -69,45 +74,26 @@ class servidor():
             except:
                 ''
         'se establece el recive'
-        self.socket_recive.append(socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket_recive[id].bind((self.ip, 8000))
+        self.socket_recive.append(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
+        self.socket_recive[id].bind((self.ip[id], puerto2))
         self.socket_recive[id].listen(1)
-
-        self.conexion, self.direccion = self.s.accept()
-
-
-    '''    def establecer_conexion(self):
-        'se establece el envia'
-        while True:
-            try:
-                self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.socket.connect((self.ip, 8001))
-                break
-            except:
-                ''
-        'se establece el recive'
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.bind((self.ip, 8000))
-        self.s.listen(1)
-        self.conexion, self.direccion = self.s.accept()
-    '''
-
+        self.conexion_recive, self.direccion_recive = self.socket_recive[id].accept()
 
     def velocidad_jugador(self):
         self.jugador_velocidad+=10
     def movimiento(self):
-        self.velocidad(random.randint(0, 4))
+        while True:
+            self.velocidad(random.randint(0, 4))
+            break
         while True:
 
             'posicion actual'
             self.pelota_posicion[0] += self.vel_x
             self.pelota_posicion[1] += self.vel_y
-            'movimiento actual'
-            self.pelota_movimiento[0]+= self.vel_x
-            self.pelota_movimiento[1]+= self.vel_y
 
-            print("esto se ejecuta", self.pelota_posicion ,self.pelota_movimiento,"x",self.vel_x,"y",self.vel_y)
-            print("derecha",self.tope_derecha,"izquierda",self.tope_izquierda,"arriba",self.tope_arriba,"abajo,",self.tope_abajo)
+
+            '''print("esto se ejecuta", self.pelota_posicion ,self.pelota_movimiento,"x",self.vel_x,"y",self.vel_y)
+            print("derecha",self.tope_derecha,"izquierda",self.tope_izquierda,"arriba",self.tope_arriba,"abajo,",self.tope_abajo)'''
 
             if self.pelota_posicion[1]>=self.tope_abajo:
                 if self.direccion==2:
@@ -146,70 +132,28 @@ class servidor():
         elif self.direccion==3:
             self.vel_x = random.randint(20, 51)
             self.vel_y = random.randint(20, 51)
-        print(self.vel_x,self.vel_y)
 
-    0
-
-
-    def envia(self):
+    def envia(self,id,puerto):
         while True:
             'envia posicion de jugador 1 y polota posicion'
-            self.socket.sendto(pickle.dumps(self.valores+self.pelota_movimiento ), (self.ip, 8001))
-            self.valores[4]=0
-            self.pelota_movimiento[0]=0
-            self.pelota_movimiento[1]=0
+            self.socket_envia[id].sendto(pickle.dumps(self.jugador_posicion+self.pelota_posicion), (self.ip[id], puerto))
+            'print(self.jugador_posicion+self.pelota_posicion)'
             time.sleep(0.1)
             '''if (self.socket.recv(1024).decode()!="si"):
                 break'''
-        self.socket.close()
-    def recive(self):
-        self.valores = []
-        self.peticion = self.conexion.recv(1024)
-        self.valores = pickle.loads(self.peticion)
+        self.socket_envia[id].close()
+    def recive(self,id,puerto):
 
         while True:
-            self.peticion = self.conexion.recv(1024).decode()
-            'print(self.peticion)'
-            '''if (self.peticion!=""):
-                print(self.peticion)
-                print(self.valores[1])
-                print(self.valores[2])
-                print(self.valores[3])'''
-            if self.peticion == "arriba" and self.valores[1]>=self.valores[2]:
-                self.valores[1]+=-self.jugador_velocidad
-                self.valores[4]+=-self.jugador_velocidad
-                'self.conexion.send("arriba".encode())'
-                'print("arriba")'
-            if self.peticion == "abajo" and self.valores[1]<=self.valores[3]:
-                self.valores[1]+=self.jugador_velocidad
-                self.valores[4]+=self.jugador_velocidad
-                'self.conexion.send("abajo".encode())'
-                'print("abajo")'
-            'self.conexion.send("sdadsa".encode())'
-        self.conexion.close()
 
-servidor = servidor()
+            self.peticion = self.conexion_recive.recv(1024).decode()
+            if self.peticion == "arriba" and self.jugador_posicion[id]>=self.tope_arriba :
+                self.jugador_posicion[id]+=-self.jugador_velocidad
+                self.jugador_posicion[id+1]+=-self.jugador_velocidad
+            if self.peticion == "abajo" and self.jugador_posicion[id]<=self.tope_abajo_jugador:
+                self.jugador_posicion[id]+=self.jugador_velocidad
+                self.jugador_posicion[id+1]+=self.jugador_velocidad
 
-'''s= socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((socket.gethostbyname(socket.gethostname()) ,8000))
-s.listen(1)
-print("empezo")
-print("coneccion nueva")
-conexion, direccion = s.accept()
-valores=[]
-while True:
-    peticion = conexion.recv(1024)
-    peticion=pickle.loads(peticion)
-    if peticion[0]=="inicio":
-        print("inicio")
-        valores=peticion
-        conexion.send(pickle.dumps("inicio"))
-    if peticion=="arriba":
-        print("arriba")
-        conexion.send(pickle.dumps("arriba"))
-    if peticion=="abajo":
-        print("abajo")
-        conexion.send(pickle.dumps("abajo"))
-    print(peticion)
-conexion.close()
-'''
+        self.coneccion_recive.close()
+
+servidor = servidor(socket.gethostbyname(socket.gethostname()),socket.gethostbyname(socket.gethostname()))
