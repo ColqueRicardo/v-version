@@ -1,0 +1,6 @@
+2020-02-29 23:29:59,832 - esto es una prueba de namae: Lindys IP: 192.168.2.14
+2020-02-29 23:29:59,832 - division sobre '0' de Lindys
+Traceback (most recent call last):
+  File "C:/Users/ricar/PycharmProjects/v-version/venv/pruebas aisladas/loggin/loggin test.py", line 11, in <module>
+    print(0/0)
+ZeroDivisionError: division by zero
