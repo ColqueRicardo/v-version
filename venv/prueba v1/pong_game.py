@@ -128,7 +128,7 @@ class pong_game():
 
             'self.conexion.send("si".encode())'
 
-        self.conexion.close()
+        self.conexion.close() 
 
 
 pg=pong_game(socket.gethostbyname(socket.gethostname()),"j1")
