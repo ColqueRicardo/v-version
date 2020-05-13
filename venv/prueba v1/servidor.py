@@ -10,21 +10,29 @@ class servidor():
         self.ip.append(ip1)
         self.ip.append(ip2)
 
+        self.bandera=0
+
+        'self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)'
+
         'self.ip=socket.gethostbyname(socket.gethostname())'
         'velocidad de los objetos'
         self.jugador_velocidad=0
+        self.vel_x=0
+        self.vel_y=0
 
 
+        self.puerto_recive_j1=8000
+        self.puerto_enviar_j1=8001
+
+        self.puerto_recive_j2=8002
+        self.puerto_enviar_j2=8003
 
 
         self.velocidad_jugador()
         'variables usadas en el envio / recive'
-        self.socket_envia=[]
-        self.socket_recive=[]
-        '''self.coneccion_envia=[]
-        self.direccion_envia=[]
-        self.coneccion_recive=[]
-        self.direccion_recive=[]'''
+        '''self.socket_envia=[]
+        self.socket_recive=[]'''
+
 
 
 
@@ -53,35 +61,68 @@ class servidor():
         self.pelota_posicion.append(y-t)
 
 
-        self.conexion(0,8001,8000)
+        'self.conexion(0,8001,8000)'
+        self.establecer_conexion()
+
+        while True:
+            if self.bandera==2:
+                break
         self.hilo_pelota_movimiento=threading.Thread(name="movimiento",target=self.movimiento)
         self.hilo_pelota_movimiento.start()
-        self.hilo_recive=threading.Thread(name="recive",target=self.recive,args={0,8000})
+        self.hilo_recive=threading.Thread(name="recive",target=self.recive)
         self.hilo_recive.start()
-        self.hilo_envia=threading.Thread(name="envia",target=self.envia,args={0,8001})
+        self.hilo_envia=threading.Thread(name="envia",target=self.envia)
         self.hilo_envia.start()
 
 
     def establecer_conexion(self):
-        self.hilo_conexion1=threading.Thread(name=self.ip[0],target=self.conexion(0,8000,8001))
+        '''self.puerto_recive_j1=8000
+        self.puerto_enviar_j1=8001
+        self.puerto_recive_j2=8002
+        self.puerto_enviar_j2=8003'''
 
-    def conexion(self,id,puerto1,puerto2):
+        self.hilo_conexion1=threading.Thread(name=self.ip[0],target=self.conexion_j1)
+        self.hilo_conexion2 = threading.Thread(name=self.ip[1], target=self.conexion_j2)
+        self.hilo_conexion1.start()
+        self.hilo_conexion2.start()
+    def conexion_j1(self):
+        'para j1'
+        'envia'
         while True:
             try:
-                self.socket_envia.append(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
-                self.socket_envia[id].connect((self.ip[id], puerto1))
+                self.socket_envia_j1=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.socket_envia_j1.connect((self.ip[0], self.puerto_enviar_j1))
+                break
+            except:
+
+                ''
+        'se establece el recive'
+        self.socket_recive_j1=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket_recive_j1.bind((self.ip[0], self.puerto_recive_j1))
+        self.socket_recive_j1.listen(1)
+        self.conexion_recive_j1, self.direccion_recive_j1 = self.socket_recive_j1.accept()
+        self.bandera+=1
+
+    def conexion_j2(self):
+        'para j2'
+        'envia'
+        while True:
+            try:
+                self.socket_envia_j2=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.socket_envia_j2.connect((self.ip[1], self.puerto_enviar_j2))
                 break
             except:
                 ''
         'se establece el recive'
-        self.socket_recive.append(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
-        self.socket_recive[id].bind((self.ip[id], puerto2))
-        self.socket_recive[id].listen(1)
-        self.conexion_recive, self.direccion_recive = self.socket_recive[id].accept()
-
+        self.socket_recive_j2=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket_recive_j2.bind((self.ip[1], self.puerto_recive_j2))
+        self.socket_recive_j2.listen(1)
+        self.conexion_recive_j2, self.direccion_recive_j2 = self.socket_recive_j2.accept()
+        self.bandera+=1
     def velocidad_jugador(self):
         self.jugador_velocidad+=10
     def movimiento(self):
+        print("inicia movimiento")
         while True:
             self.velocidad(random.randint(0, 4))
             break
@@ -90,11 +131,7 @@ class servidor():
             'posicion actual'
             self.pelota_posicion[0] += self.vel_x
             self.pelota_posicion[1] += self.vel_y
-
-
-            '''print("esto se ejecuta", self.pelota_posicion ,self.pelota_movimiento,"x",self.vel_x,"y",self.vel_y)
-            print("derecha",self.tope_derecha,"izquierda",self.tope_izquierda,"arriba",self.tope_arriba,"abajo,",self.tope_abajo)'''
-
+            print(self.pelota_posicion)
             if self.pelota_posicion[1]>=self.tope_abajo:
                 if self.direccion==2:
                     self.velocidad(0)
@@ -133,26 +170,30 @@ class servidor():
             self.vel_x = random.randint(20, 51)
             self.vel_y = random.randint(20, 51)
 
-    def envia(self,id,puerto):
+    def envia(self):
+        'para j1'
+        print("inicia envio j1")
         while True:
             'envia posicion de jugador 1 y polota posicion'
-            self.socket_envia[id].sendto(pickle.dumps(self.jugador_posicion+self.pelota_posicion), (self.ip[id], puerto))
-            'print(self.jugador_posicion+self.pelota_posicion)'
+            self.socket_envia_j1.sendto(pickle.dumps(self.jugador_posicion+self.pelota_posicion), (self.ip[0], self.puerto_enviar_j1))
             time.sleep(0.1)
             '''if (self.socket.recv(1024).decode()!="si"):
                 break'''
-        self.socket_envia[id].close()
-    def recive(self,id,puerto):
+        self.socket_envia[0].close()
+    def recive(self):
+        'para j1'
+        print("inicia recive j1")
 
         while True:
 
-            self.peticion = self.conexion_recive.recv(1024).decode()
-            if self.peticion == "arriba" and self.jugador_posicion[id]>=self.tope_arriba :
-                self.jugador_posicion[id]+=-self.jugador_velocidad
-                self.jugador_posicion[id+1]+=-self.jugador_velocidad
-            if self.peticion == "abajo" and self.jugador_posicion[id]<=self.tope_abajo_jugador:
-                self.jugador_posicion[id]+=self.jugador_velocidad
-                self.jugador_posicion[id+1]+=self.jugador_velocidad
+            self.peticion = self.conexion_recive_j1.recv(1024).decode()
+            print(self.peticion)
+            if self.peticion == "arriba" and self.jugador_posicion[0]>=self.tope_arriba :
+                self.jugador_posicion[0]+=-self.jugador_velocidad
+                self.jugador_posicion[1]+=-self.jugador_velocidad
+            if self.peticion == "abajo" and self.jugador_posicion[0]<=self.tope_abajo_jugador:
+                self.jugador_posicion[0]+=self.jugador_velocidad
+                self.jugador_posicion[1]+=self.jugador_velocidad
 
         self.coneccion_recive.close()
 

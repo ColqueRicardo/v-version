@@ -14,8 +14,22 @@ from tkinter import *
 
 class pong_game():
     def __init__(self,ip,jugador):
+
+        self.bandera=0
+
         self.ip=ip
         self.jugador=jugador
+
+        while   TRUE:
+            if self.jugador==1:
+                self.puerto_enviar=8000
+                self.puerto_recive=8001
+                break
+            elif self.jugador==2:
+                self.puerto_enviar=8002
+                self.puerto_recive=8003
+                break
+
 
         self.ventana= Tk()
         self.x=self.ventana.winfo_screenwidth()
@@ -67,14 +81,44 @@ class pong_game():
 
 
         self.canvas.focus_set()
-        self.establecer_conexion()
+
+        'self.establecer_conexion()'
+        self.conexionhilo1=threading.Thread(name="hilosconexion1",target=self.establecer_conexion)
+        self.conexionhilo1.start()
+        self.conexionhilo2=threading.Thread(name="hilosconexion2",target=self.conexion_j2)
+        self.conexionhilo2.start()
 
         self.canvas.bind("<1>",lambda  event: self.click(event))
         self.canvas.bind("<Key>",lambda event: self.mover(event))
         self.hilo_actualizador=threading.Thread(name="actualizar",target=self.actualizar)
         self.hilo_actualizador.start()
+
+
         self.hilo_mainloop=threading.Thread(name="mainloop",target=self.ventana.mainloop())
         self.hilo_mainloop.start()
+
+    def establecer_conexion(self):
+        'se establece el recive'
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.bind((self.ip, self.puerto_recive))
+        self.socket.listen(1)
+        self.conexion, self.direccion = self.socket.accept()
+
+        'se establece el envia'
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        self.socket.connect((self.ip, self.puerto_enviar))
+        self.bandera+=1
+    def conexion_j2(self):
+        'se establece el recive'
+        self.socket_j2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket_j2.bind((self.ip, 8003))
+        self.socket_j2.listen(1)
+        self.conexion_j2, self.direccion_j2 = self.socket_j2.accept()
+        'se establece el envia'
+        self.socket_j2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket_j2.connect((self.ip, 8002))
+        self.bandera+=1
 
     def click(self,event):
         print(event.x,event.y)
@@ -84,39 +128,35 @@ class pong_game():
             self.enviar_movimiento("arriba")
         if event.char=="s":
             self.enviar_movimiento("abajo")
+        if event.char=="i":
+            ''
+            self.enviar_movimiento_j2("arriba")
+        if event.char == "k":
+            ''
+            self.enviar_movimiento_j2("abajo")
+    def enviar_movimiento_j2(self,movimiento):
+        'movimiento = pickle.dumps(movimiento)'
+        self.socket.sendto(movimiento.encode(), (self.ip, self.puerto_enviar))
+
     def enviar_movimiento(self,movimiento):
         'movimiento = pickle.dumps(movimiento)'
-        self.socket.sendto(movimiento.encode(), (self.ip, 8000))
+        self.socket.sendto(movimiento.encode(), (self.ip, self.puerto_enviar))
 
         'respuesta = self.socket.recv(1024).decode()'
         'print(respuesta)'
 
-    def establecer_conexion(self):
 
-        'se establece el recive'
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.bind((self.ip, 8001))
-        self.socket.listen(1)
-        self.conexion, self.direccion = self.socket.accept()
 
-        'se establece el envia'
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((self.ip, 8000))
-        '''
-        mensaje=[]
-        mensaje.append("inicio")
-        mensaje.append(self.inicio_y)
-        mensaje.append(self.minimo_y)
-        mensaje.append(self.maximo_y)
-        'mensaje.append(0)'
-        self.socket.sendto(pickle.dumps(mensaje), (self.ip, 8000))'''
 
     def actualizar(self):
         'conexion de recive'
+        while self.bandera<2:
+            ''
+
         while True:
             self.valores = self.conexion.recv(1024)
             self.valores=pickle.loads(self.valores)
-            'print(self.valores)'
+            print(self.valores)
             self.canvas.move(self.jugador1 ,0,self.valores[0]-self.jugador_posicion[0])
             self.canvas.move(self.jugador2, 0, self.valores[1] - self.jugador_posicion[1])
             self.jugador_posicion[0]=self.valores[0]
@@ -128,7 +168,7 @@ class pong_game():
 
             'self.conexion.send("si".encode())'
 
-        self.conexion.close() 
+        self.conexion.close()
 
 
-pg=pong_game(socket.gethostbyname(socket.gethostname()),"j1")
+pg=pong_game(socket.gethostbyname(socket.gethostname()),1)
