@@ -19,7 +19,7 @@ class pong_game():
 
         self.ip=ip
         self.jugador=jugador
-
+        print(ip,jugador)
         while   TRUE:
             if self.jugador==1:
                 self.puerto_enviar=8000
@@ -35,7 +35,7 @@ class pong_game():
         self.x=self.ventana.winfo_screenwidth()
         self.y=self.ventana.winfo_screenheight()
         self.ventana.geometry("{0}x{1}+0+0".format(self.x,self.y))
-        self.ventana.overrideredirect(TRUE)
+        'self.ventana.overrideredirect(TRUE)'
         self.ventana.config(bg="RED")
         self.canvas= Canvas(self.ventana,bg="Black")
 
@@ -85,8 +85,8 @@ class pong_game():
         'self.establecer_conexion()'
         self.conexionhilo1=threading.Thread(name="hilosconexion1",target=self.establecer_conexion)
         self.conexionhilo1.start()
-        self.conexionhilo2=threading.Thread(name="hilosconexion2",target=self.conexion_j2)
-        self.conexionhilo2.start()
+        '''self.conexionhilo2=threading.Thread(name="hilosconexion2",target=self.conexion_j2)
+        self.conexionhilo2.start()'''
 
         self.canvas.bind("<1>",lambda  event: self.click(event))
         self.canvas.bind("<Key>",lambda event: self.mover(event))
@@ -109,16 +109,7 @@ class pong_game():
 
         self.socket.connect((self.ip, self.puerto_enviar))
         self.bandera+=1
-    def conexion_j2(self):
-        'se establece el recive'
-        self.socket_j2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket_j2.bind((self.ip, 8003))
-        self.socket_j2.listen(1)
-        self.conexion_j2, self.direccion_j2 = self.socket_j2.accept()
-        'se establece el envia'
-        self.socket_j2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket_j2.connect((self.ip, 8002))
-        self.bandera+=1
+
 
     def click(self,event):
         print(event.x,event.y)
@@ -134,9 +125,44 @@ class pong_game():
         if event.char == "k":
             ''
             self.enviar_movimiento_j2("abajo")
+
+    '''j2
+    def conexion_j2(self):
+        'se establece el recive'
+        self.socket_j2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket_j2.bind((self.ip, 8003))
+        self.socket_j2.listen(1)
+        self.conexion_j2, self.direccion_j2 = self.socket_j2.accept()
+        'se establece el envia'
+        self.socket_j2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket_j2.connect((self.ip, 8002))
+        self.bandera+=1
+    
     def enviar_movimiento_j2(self,movimiento):
         'movimiento = pickle.dumps(movimiento)'
         self.socket_j2.sendto(movimiento.encode(), (self.ip, self.puerto_enviar))
+    
+    def actualizar(self):
+        'conexion de recive'
+        while self.bandera<2:
+            ''
+
+        while True:
+            self.valores = self.conexion_j2.recv(1024)
+            self.valores=pickle.loads(self.valores)
+            print(self.valores)
+            self.canvas.move(self.jugador1 ,0,self.valores[0]-self.jugador_posicion[0])
+            self.canvas.move(self.jugador2, 0, self.valores[1] - self.jugador_posicion[1])
+            self.jugador_posicion[0]=self.valores[0]
+            self.jugador_posicion[1]=self.valores[1]
+            self.canvas.move(self.pelota,self.valores[2]- self.pelota_posicion[0] ,self.valores[3] - self.pelota_posicion[1])
+            self.pelota_posicion[0]=self.valores[2]
+            self.pelota_posicion[1]=self.valores[3]
+
+
+            'self.conexion.send("si".encode())'
+
+        self.conexion.close()'''
 
     def enviar_movimiento(self,movimiento):
         'movimiento = pickle.dumps(movimiento)'
@@ -150,7 +176,7 @@ class pong_game():
 
     def actualizar(self):
         'conexion de recive'
-        while self.bandera<2:
+        while self.bandera<1:
             ''
 
         while True:
@@ -170,10 +196,10 @@ class pong_game():
 
         self.conexion.close()
 
-pong_game(socket.gethostbyname(socket.gethostname()), i)
+'pong_game(socket.gethostbyname(socket.gethostname()), 1)'
 
-'''def inicia(i):
-    pong_game(socket.gethostbyname(socket.gethostname()), i)
 
-a=threading.Thread(name="j1",target=inicia,args={1})
-b=threading.Thread(name="j2",target=inicia,args={2})'''
+a=threading.Thread(name="j1",target=pong_game,args={socket.gethostbyname(socket.gethostname()),1})
+b=threading.Thread(name="j2",target=pong_game,args={socket.gethostbyname(socket.gethostname()),2})
+a.start()
+b.start()

@@ -66,6 +66,7 @@ class servidor():
 
         while True:
             if self.bandera==2:
+                print("se an iniciado las 2")
                 break
         self.hilo_pelota_movimiento=threading.Thread(name="movimiento",target=self.movimiento)
         self.hilo_pelota_movimiento.start()
@@ -124,8 +125,8 @@ class servidor():
         'inicia el recive-envia j2'
         self.hilo_recive=threading.Thread(name="recive",target=self.recive_j2)
         self.hilo_recive.start()
-        '''self.hilo_envia=threading.Thread(name="envia",target=self.envia_j2)
-        self.hilo_envia.start()'''
+        self.hilo_envia=threading.Thread(name="envia",target=self.envia_j2)
+        self.hilo_envia.start()
     def velocidad_jugador(self):
         self.jugador_velocidad+=10
     def movimiento(self):
