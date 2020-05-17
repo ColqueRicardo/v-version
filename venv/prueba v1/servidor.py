@@ -69,10 +69,7 @@ class servidor():
                 break
         self.hilo_pelota_movimiento=threading.Thread(name="movimiento",target=self.movimiento)
         self.hilo_pelota_movimiento.start()
-        self.hilo_recive=threading.Thread(name="recive",target=self.recive)
-        self.hilo_recive.start()
-        self.hilo_envia=threading.Thread(name="envia",target=self.envia)
-        self.hilo_envia.start()
+
 
 
     def establecer_conexion(self):
@@ -102,6 +99,11 @@ class servidor():
         self.socket_recive_j1.listen(1)
         self.conexion_recive_j1, self.direccion_recive_j1 = self.socket_recive_j1.accept()
         self.bandera+=1
+        'inicia el revice . envia del j1'
+        self.hilo_recive=threading.Thread(name="recive",target=self.recive_j1)
+        self.hilo_recive.start()
+        self.hilo_envia=threading.Thread(name="envia",target=self.envia_j1)
+        self.hilo_envia.start()
 
     def conexion_j2(self):
         'para j2'
@@ -119,6 +121,11 @@ class servidor():
         self.socket_recive_j2.listen(1)
         self.conexion_recive_j2, self.direccion_recive_j2 = self.socket_recive_j2.accept()
         self.bandera+=1
+        'inicia el recive-envia j2'
+        self.hilo_recive=threading.Thread(name="recive",target=self.recive_j2)
+        self.hilo_recive.start()
+        '''self.hilo_envia=threading.Thread(name="envia",target=self.envia_j2)
+        self.hilo_envia.start()'''
     def velocidad_jugador(self):
         self.jugador_velocidad+=10
     def movimiento(self):
@@ -170,7 +177,7 @@ class servidor():
             self.vel_x = random.randint(20, 51)
             self.vel_y = random.randint(20, 51)
 
-    def envia(self):
+    def envia_j1(self):
         'para j1'
         print("inicia envio j1")
         while True:
@@ -180,8 +187,8 @@ class servidor():
             '''if (self.socket.recv(1024).decode()!="si"):
                 break'''
         self.socket_envia[0].close()
-    def recive(self):
-        'para j1'
+    def recive_j1(self):
+        'para _j1'
         print("inicia recive j1")
 
         while True:
@@ -190,9 +197,32 @@ class servidor():
             print(self.peticion)
             if self.peticion == "arriba" and self.jugador_posicion[0]>=self.tope_arriba :
                 self.jugador_posicion[0]+=-self.jugador_velocidad
-                self.jugador_posicion[1]+=-self.jugador_velocidad
             if self.peticion == "abajo" and self.jugador_posicion[0]<=self.tope_abajo_jugador:
                 self.jugador_posicion[0]+=self.jugador_velocidad
+
+        self.coneccion_recive.close()
+
+    def envia_j2(self):
+        'para _j2'
+        print("inicia envio j1")
+        while True:
+            'envia posicion de jugador 1 y polota posicion'
+            self.socket_envia_j2.sendto(pickle.dumps(self.jugador_posicion+self.pelota_posicion), (self.ip[0], self.puerto_enviar_j2))
+            time.sleep(0.1)
+            '''if (self.socket.recv(1024).decode()!="si"):
+                break'''
+        self.socket_envia_j2.close()
+    def recive_j2(self):
+        'para j2'
+        print("inicia recive j1")
+
+        while True:
+
+            self.peticion = self.conexion_recive_j2.recv(1024).decode()
+            print(self.peticion)
+            if self.peticion == "arriba" and self.jugador_posicion[1]>=self.tope_arriba :
+                self.jugador_posicion[1]+=-self.jugador_velocidad
+            if self.peticion == "abajo" and self.jugador_posicion[1]<=self.tope_abajo_jugador:
                 self.jugador_posicion[1]+=self.jugador_velocidad
 
         self.coneccion_recive.close()

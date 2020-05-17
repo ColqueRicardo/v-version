@@ -136,7 +136,7 @@ class pong_game():
             self.enviar_movimiento_j2("abajo")
     def enviar_movimiento_j2(self,movimiento):
         'movimiento = pickle.dumps(movimiento)'
-        self.socket.sendto(movimiento.encode(), (self.ip, self.puerto_enviar))
+        self.socket_j2.sendto(movimiento.encode(), (self.ip, self.puerto_enviar))
 
     def enviar_movimiento(self,movimiento):
         'movimiento = pickle.dumps(movimiento)'
@@ -170,5 +170,10 @@ class pong_game():
 
         self.conexion.close()
 
+pong_game(socket.gethostbyname(socket.gethostname()), i)
 
-pg=pong_game(socket.gethostbyname(socket.gethostname()),1)
+'''def inicia(i):
+    pong_game(socket.gethostbyname(socket.gethostname()), i)
+
+a=threading.Thread(name="j1",target=inicia,args={1})
+b=threading.Thread(name="j2",target=inicia,args={2})'''
