@@ -1,3 +1,4 @@
+'este es ek q funca'
 import socket
 import string
 import sys
