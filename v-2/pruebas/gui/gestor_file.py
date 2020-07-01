@@ -67,6 +67,7 @@ def recorrer(c):
         if type(i)==archivo:
             print("nombre: ", i.nombre,".",i.extencion,"id: ",i.id)
 
+
 def busqueda_completa(c,v,w,s):
     p=None
     for i in c.contenido:
@@ -89,6 +90,7 @@ def busqueda_id(dir_actual,v):
     except:
         'print("no se encontro o ruta desconocida")'
         return None
+''' cargar y recorrer una 2 carpetas  con 13 archivos cada una
 c=carpeta("master")
 c.asignar_id(0)
 
@@ -105,14 +107,14 @@ for i in c.contenido:
 'print("nombre: ", c.nombre, "id: ", c.id)'
 recorrer(c)
 
-
-v=[]
+'''
+'v=[]'
 'archivo existente'
 '''v.append(11)
 v.append(0)'''
 'archivo inexistente'
-v.append(12)
-v.append(2)
+'''v.append(12)
+v.append(2)'''
 '''
 'primer metodo'
 start_time = time()
@@ -126,7 +128,7 @@ print("termino",elapsed_time)
 '''
 
 'segundo de busqueda '
-
+'''
 start_time = time()
 s=busqueda_id(c,v)
 if s!=None:
@@ -135,4 +137,4 @@ else:
     print("no se encontro")
 elapsed_time = time() - start_time
 print("termino",elapsed_time)
-
+'''
