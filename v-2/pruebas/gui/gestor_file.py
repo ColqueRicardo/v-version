@@ -3,19 +3,19 @@ from timeit import timeit
 from time import time
 
 class archivo():
-    def __init__(self,nombre):
+    def __init__(self,nombre,contenido):
+        'el valor contenido solo asigna un id del contenido del archivo de la clase archivo_contenido'
         self.id=""
         self.visible=1
         w=self.sacar_extencion(nombre)
         self.nombre=w[0]
         self.extencion=w[1]
-        self.contenido=-1
+        self.contenido=contenido
         del w
     def asignar_id(self,id):
         self.id=id
         return self
-    def asignar_contenido(self,contenido):
-        self.contenido=contenido
+
 
     def sacar_extencion(self,nombre):
         w = []
@@ -36,11 +36,12 @@ class archivo():
 class archivo_contenido():
     def __init__(self):
         self.archivo_contenido= []
-    def len_archivo(self):
+    def cantidad_archivos(self):
         return len(self.archivo_contenido)
     def agregar(self,contenido):
         self.archivo_contenido.append(contenido)
-
+    def obtener_contenido(self,id):
+        return self.archivo_contenido[id]
 
 
 class carpeta():

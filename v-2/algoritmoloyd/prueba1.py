@@ -82,7 +82,7 @@ class interfaz:
                 self.vent.update()
 
             except:
-                print("esta limpio")
+                ''
             tam = (int(self.vent.winfo_screenheight()) * 0.8) // int(len(matriz[0]))
             if tam > 50:
                 tam = 50
@@ -125,7 +125,7 @@ class interfaz:
                 self.vent.update()
 
             except:
-                print("esta limpio")
+                ''
 
 
             tam= (int(self.vent.winfo_screenheight())*0.8)//int(self.cant_nodo.get())
@@ -252,10 +252,17 @@ class floyd:
 
                 for j in range(self.tamaño):
                     if i != j:
+
                         'matriz d'
-                        Label(self.contenedor, width=10, text=str(self.estado_1[w][i][j])).grid(row=i + 1, column=j + 1)
+                        if self.estado_1[w][i][j]>0:
+                            Label(self.contenedor, width=10, text=str(self.estado_1[w][i][j])).grid(row=i + 1, column=j + 1)
+                        else:
+                            Label(self.contenedor, width=10, text="-").grid(row=i + 1,column=j + 1)
                         'matriz adjunta'
-                        Label(self.contenedor, width=10, text=str(self.estado_2[w][i][j])).grid(row=i + 3+self.tamaño, column=j + 1 )
+                        if self.estado_2[w][i][j]>0:
+                            Label(self.contenedor, width=10, text=str(self.estado_2[w][i][j])).grid(row=i + 3+self.tamaño, column=j + 1 )
+                        else:
+                            Label(self.contenedor, width=10, text="-").grid(row=i + 3 + self.tamaño, column=j + 1)
                         'Label(self.contenedor,text=str(self.estado_1[w][i][j])).place(x=x, y=y, width=tam, height=tam)'
 
                     else:
