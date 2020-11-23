@@ -1,5 +1,5 @@
 # !/usr/bin/python3
-from _tkinter import *
+from tkinter import *
 
 
 def donothing():

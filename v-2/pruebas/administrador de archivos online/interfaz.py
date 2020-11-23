@@ -94,7 +94,12 @@ class gui():
             self.id_actual=-1
     def agregar_carpeta(self):
         self.iconos.delete("all")
-        self.busqueda_carpeta(self.sistema_de_archivos, self.ruta).agregar_contenido(carpeta("nueva carpeta"))
+        s=0
+        while True:
+            if not self.busqueda_carpeta(self.sistema_de_archivos, self.ruta).agregar_contenido(carpeta("nueva carpeta"+str(s)))!=-1:
+                s+=1
+            else:
+                break
         self.cargar_canvas(self.busqueda_carpeta(self.sistema_de_archivos, self.ruta))
     def agregar_archivo(self):
 
