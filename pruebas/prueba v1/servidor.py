@@ -6,6 +6,7 @@ import random
 
 class servidor():
     def __init__(self,ip1,ip2):
+        print("inicio servidor")
         self.ip=[]
         self.ip.append(ip1)
         self.ip.append(ip2)
@@ -65,6 +66,7 @@ class servidor():
         self.establecer_conexion()
 
         while True:
+
             if self.bandera==2:
                 print("se an iniciado las 2")
                 break

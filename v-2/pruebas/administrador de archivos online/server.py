@@ -7,7 +7,22 @@ import sys
 sys.path.append("v-2/pruebas/administrador de archivos online/gestor_file.py")
 from gestor_file import *
 
-class server():
+
+class cliente:
+    def __init__(self):
+        self.ruta=[]
+    def conectar(self,ip_servidor):
+        self.ip_servidor=ip_servidor
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.connect((self.ip_servidor, 8000))
+        self.id=pickle.dumps(self.socket.recv(1024))
+        return pickle.dumps(self.socket.recv(1024))
+
+    def accion(self,peticion):
+        self.socket.send(pickle.loads(peticion))
+        return pickle.dumps(self.socket.recv(1024))
+
+class server:
     def __init__(self,conexiones_maximas,puerto,archivos):
         self.ip_server=socket.gethostbyname(socket.gethostname())
         'self.puertos=[]'
@@ -23,6 +38,7 @@ class server():
         'clientes'
         self.ruta_actual={}
 
+
     def iniciar_server(self):
         self.conexion_id=0
         while True:
@@ -33,20 +49,33 @@ class server():
             self.hilos[self.conexion_id].start()
             self.conexion_id+=1
     def gestor_conexiones(self,conexion,id_hilo):
-        self.ruta_actual[id_hilo]=[0]
+        self.ruta_actual[id_hilo]=[]
+        self.ruta_actual[id_hilo].append(0)
         'enviarle el sistema de archivos actual desde el master'
+        conexion.send(pickle.dumps(id_hilo))
         conexion.send(pickle.dumps(self.gestor_archivos.busqueda_carpeta(self.ruta_actual[id_hilo])))
         while True:
             peticion= pickle.loads(conexion.recv(1024))
             'todas las peticiones tiene el primer dato como lo que necesitan hacer y el segundo la ruta en string, exepcion de creacion de archivo que viene el archivo'
-            if peticion[0]="abrir":
-                conexion.send(pickle.dumps(self.abrir(peticion[1])))
+            'peticion[0]= accion , pet[1]=situacion actual(nuevo elemento para la ruta), pet[2]=id del cliente, el resto es un caso especial'
+            if peticion[0]=="abrir":
+                self.ruta_actual[peticion[2]].append(peticion[1])
+                conexion.send(pickle.dumps(self.abrir(self.ruta_actual[peticion[2]])))
+
             elif peticion[0]=="borrar":
-                self.borrar()
+
+                self.borrar(self.ruta_actual[peticion[2]]+peticion[1])
+                conexion.send(pickle.dumps(self.abrir(self.ruta_actual[peticion[2]])))
+
             elif peticion[0] == "crear_carpeta":
-                self.crear_carpeta()
+
+                self.crear_carpeta(self.ruta_actual[peticion[2]])
+                conexion.send(pickle.dumps(self.abrir(self.ruta_actual[peticion[2]])))
+
             elif peticion[0] == "crear_archivo":
-                self.crear_archivo()
+                'caso especial peticion => 0 es accion , 1 es archivo,2 es id, 3 es contenido'
+                self.crear_archivo(self.ruta_actual[peticion[2]],peticion[1],peticion[3])
+                conexion.send(pickle.dumps(self.abrir(self.ruta_actual[peticion[2]])))
 
 
     def abrir(self,ruta):
@@ -75,7 +104,7 @@ class server():
             else:
                 i+=1
 
-    def crear_archivo(self, archivo,ruta,contenido):
+    def crear_archivo(self,ruta,archivo,contenido):
         'crea un archivo'
         if self.gestor_archivos.busqueda_carpeta(ruta).agregar_contenido(archivo)!=-1:
             ruta.append(archivo.nombre+"."+archivo.extencion)
